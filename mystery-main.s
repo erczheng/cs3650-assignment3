@@ -1,41 +1,71 @@
-# Write the assembly code for the main function of the mystery program
-
 .text
 .global main
 main:
-  # Prologue: push rbx and r12, then sub 8 from rsp
-  # (two pushes leave the stack off by 8)
+  # Prologue: save rbx and r12, then realign the stack
+  push %rbx
+  push %r12
+  sub $8, %rsp
 
   # if (argc != 3) jump to error
+  cmp $3, %edi
+  jne error
 
   # Save argv in rbx
+  mov %rsi, %rbx
 
-  # a = atol(argv[1]): put 8(%rbx) in rdi, call atol, move rax to r12
+  # a = atol(argv[1])
+  mov 8(%rbx), %rdi
+  call atol
+  mov %rax, %r12
 
-  # b = atol(argv[2]): put 16(%rbx) in rdi, call atol
+  # b = atol(argv[2])
+  mov 16(%rbx), %rdi
+  call atol
 
-  # result = crunch(a, b): a into rdi, b into rsi, call crunch
+  # result = crunch(a, b)
+  mov %r12, %rdi
+  mov %rax, %rsi
+  call crunch
 
-  # Compare result with 0: jl to print_hat, je to print_tea,
-  # otherwise fall through to print_beer
+  # Branch on the sign of result
+  cmp $0, %rax
+  jl print_hat
+  je print_tea
 
 print_beer:
-  # put address of beer_msg in rdi, call puts, jump to success
+  # Print "beer"
+  mov $beer_msg, %rdi
+  call puts
+  jmp success
 
 print_hat:
-  # put address of hat_msg in rdi, call puts, jump to success
+  # Print "hat"
+  mov $hat_msg, %rdi
+  call puts
+  jmp success
 
 print_tea:
-  # put address of tea_msg in rdi, call puts, fall through to success
+  # Print "tea"
+  mov $tea_msg, %rdi
+  call puts
 
 success:
-  # return 0: put 0 in rax, jump to done
+  # Return 0
+  mov $0, %rax
+  jmp done
 
 error:
-  # put address of error_msg in rdi, call puts, put 1 in rax
+  # Print error and return 1
+  mov $error_msg, %rdi
+  call puts
+  mov $1, %rax
 
 done:
-  # Epilogue: add 8 to rsp, pop r12, pop rbx, ret
+  # Epilogue: undo the alignment, restore registers in reverse order
+  add $8, %rsp
+  pop %r12
+  pop %rbx
+  ret
 
 .data
 error_msg:
