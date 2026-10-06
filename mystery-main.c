@@ -1,5 +1,7 @@
-// Provided by libmystery.a
-long crunch(long a, long b);
+#include <stdio.h>
+#include <stdlib.h>
+
+extern long crunch(long, long);
 
 int main(int argc, char *argv[]) {
   // Need exactly two arguments (plus program name)
